@@ -4,7 +4,8 @@ import {
   Delete,
   Get,
   Param,
-  Post, UploadedFile,
+  Post,
+  UploadedFile,
   UseInterceptors
 } from '@nestjs/common';
 import {InjectModel} from "@nestjs/mongoose";
@@ -13,7 +14,6 @@ import {Model} from "mongoose";
 import {CreateArtistDto} from "./create-artist.dto";
 import {FileInterceptor} from "@nestjs/platform-express";
 import path from "node:path";
-import {promises as fs} from "node:fs";
 import {randomUUID} from "node:crypto";
 import {diskStorage} from "multer";
 
