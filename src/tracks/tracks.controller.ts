@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -46,6 +47,11 @@ export class TracksController {
 
     const isFindAlbum = await this.albumModel.findById(trackDto.album);
     if (!isFindAlbum) throw new NotFoundException('unknown Album');
+
+    if (trackDto.name.trim().length === 0 || trackDto.album.length === 0 || trackDto.duration.trim().length === 0 || trackDto.trackNumber.trim().length === 0) {
+      throw new BadRequestException("Required name, album id and duration and trackNumber.");
+    }
+
 
     const newArtist = new this.trackModel({
       name: trackDto.name,

@@ -1,8 +1,6 @@
-import {Types} from "mongoose";
-
 export class CreateTrackDto {
   name: string;
-  album: Types.ObjectId;
+  album: string;
   duration: string;
   trackNumber: string;
 }

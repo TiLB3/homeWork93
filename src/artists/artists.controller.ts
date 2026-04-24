@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -51,6 +52,11 @@ export class ArtistsController {
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() artistDto: CreateArtistDto) {
+    if (artistDto.name.trim().length === 0) {
+      throw new BadRequestException("Name is Required");
+    }
+
+
     const newArtist = new this.artistModel({
       name: artistDto.name,
       photo: file ? 'uploads/artists/' + file.filename : null,

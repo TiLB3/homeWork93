@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -64,6 +65,11 @@ export class AlbumsController {
 
     const isFindArtist = await this.artistModel.findById(albumDto.artist);
     if (!isFindArtist) throw new NotFoundException('unknown Artist');
+
+    if(albumDto.name.trim().length === 0 || albumDto.artist.length === 0 || albumDto.releaseDate.trim().length === 0) {
+      throw new BadRequestException("Required name, artist id and releaseDate");
+    }
+
 
 
     const newArtist = new this.albumModel({
