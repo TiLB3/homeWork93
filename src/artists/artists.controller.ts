@@ -7,25 +7,26 @@ import {
   Param,
   Post,
   UploadedFile,
-  UseInterceptors
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import {InjectModel} from "@nestjs/mongoose";
-import {Artist, ArtistDocument} from "../schemas/artist.schema";
-import {Model} from "mongoose";
-import {CreateArtistDto} from "./create-artist.dto";
-import {FileInterceptor} from "@nestjs/platform-express";
-import path from "node:path";
-import {randomUUID} from "node:crypto";
-import {diskStorage} from "multer";
+import { InjectModel } from '@nestjs/mongoose';
+import { Artist, ArtistDocument } from '../schemas/artist.schema';
+import { Model } from 'mongoose';
+import { CreateArtistDto } from './create-artist.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { diskStorage } from 'multer';
+import { PermitRoleGuard } from '../permit-role/permit-role.guard';
+import { TokenAuthGuard } from '../token-auth/token-auth.guard';
 
 @Controller('artists')
 export class ArtistsController {
-
   constructor(
     @InjectModel(Artist.name)
-    private artistModel: Model<ArtistDocument>
-  ) {
-  }
+    private artistModel: Model<ArtistDocument>,
+  ) {}
 
   @Get()
   async getAll() {
@@ -34,38 +35,40 @@ export class ArtistsController {
 
   @Get(':id')
   async getOne(@Param('id') id: string) {
-    return this.artistModel.findById(id)
+    return this.artistModel.findById(id);
   }
 
+  @UseGuards(TokenAuthGuard)
   @Post()
   @UseInterceptors(
     FileInterceptor('photo', {
       storage: diskStorage({
         destination: './public/uploads/artists',
-        filename: async (_req, file, cb) => {
+        filename: (_req, file, cb) => {
           const extension = path.extname(file.originalname);
           cb(null, randomUUID() + extension);
-        }
-      })
+        },
+      }),
     }),
   )
   async create(
     @UploadedFile() file: Express.Multer.File,
-    @Body() artistDto: CreateArtistDto) {
+    @Body() artistDto: CreateArtistDto,
+  ) {
     if (artistDto.name.trim().length === 0) {
-      throw new BadRequestException("Name is Required");
+      throw new BadRequestException('Name is Required');
     }
-
 
     const newArtist = new this.artistModel({
       name: artistDto.name,
       photo: file ? 'uploads/artists/' + file.filename : null,
       information: artistDto.information,
-    })
-    return newArtist.save()
+    });
+    return newArtist.save();
   }
 
-  @Delete(":id")
+  @UseGuards(PermitRoleGuard)
+  @Delete(':id')
   async deleteOne(@Param('id') id: string) {
     return this.artistModel.findByIdAndDelete(id);
   }

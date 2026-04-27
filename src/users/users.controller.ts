@@ -7,7 +7,6 @@ import {
   Delete,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,6 +16,7 @@ import { CreateUserDto } from './create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenAuthGuard } from '../token-auth/token-auth.guard';
 import type { RequestWithUser } from '../types';
+import { PermitRoleGuard } from '../permit-role/permit-role.guard';
 
 @Controller('users')
 export class UsersController {
@@ -24,7 +24,7 @@ export class UsersController {
 
   @Post()
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    const { username, password, displayName } = createUserDto;
+    const { username, password, displayName, role } = createUserDto;
 
     if (!username || !password || !displayName) {
       throw new BadRequestException(
@@ -44,6 +44,7 @@ export class UsersController {
       username,
       password,
       displayName,
+      role,
     });
 
     user.generateToken();
