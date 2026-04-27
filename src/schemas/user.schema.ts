@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { Document } from 'mongoose';
 
-interface UserMethods {
+export interface UserMethods {
   generateToken: () => void;
-  checkPassword: () => boolean;
+  checkPassword: (password: string) => Promise<boolean>;
 }
 
 const SALT_WORK_FACTOR = 10;
@@ -23,12 +23,13 @@ export class User {
     required: true,
   })
   password: string;
-  @Prop({
-    required: true,
-  })
+  @Prop()
   token: string;
   @Prop()
   displayName: string;
+
+  @Prop({ default: 'user' })
+  role: 'admin' | 'user';
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -37,7 +38,7 @@ UserSchema.methods.generateToken = function (this: UserDocument) {
   this.token = randomUUID();
 };
 
-UserSchema.methods.checkPassword = function (
+UserSchema.methods.checkPassword = async function (
   this: UserDocument,
   password: string,
 ) {
